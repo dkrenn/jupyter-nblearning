@@ -83,6 +83,11 @@ define([
     };
 
 
+    events.on('preset_activated.CellToolbar', function(event, preset) {
+        nbcelltesting.create_global_result(preset.name === preset_name);
+    });
+
+
     function load_extension(){
         nbcelltesting.load_css();
 
