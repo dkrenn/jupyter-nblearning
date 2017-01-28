@@ -64,9 +64,16 @@ define([
         var div = $('<div/>').addClass('keywords');
         for (var keyword of keywords_data) {
             var button = $('<button/>')
-                .addClass('btn btn-default btn-xs btn-primary')
+                .addClass('btn btn-default btn-xs')
                 .prop('type', 'button')
                 .html(keyword.name);
+            if (keyword.count == keyword.max) {
+                button.addClass('btn-success');
+            } else if (keyword.count > keyword.max) {
+                button.addClass('btn-danger');
+            } else {
+                button.addClass('btn-primary');
+            }
             button.append(' ');
             button.append($('<span/>')
                           .addClass('badge btn btn-xs')
