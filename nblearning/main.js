@@ -28,6 +28,109 @@ define([
     });
 
 
+    var keywords_to_text = function(keywords) {
+        var parts = [];
+        for (var keyword of keywords) {
+            parts.push(keyword.name + ', ' + keyword.max);
+        }
+        return parts.join('\n');
+    };
+
+
+    var text_to_keywords = function(text) {
+        var keywords = [];
+        parts = text.split('\n');
+        for (var part of parts) {
+            part = part.trim();
+            if (!part) { continue; }
+            s = part.split(',');
+            if (s.length === 1) {
+                name = s[0].trim();
+                max = 1;
+            } else if (s.length === 2) {
+                name = s[0].trim();
+                max = parseInt(s[1]);
+            } else {
+                throw new SyntaxError('Cannot convert to keywords.');
+            }
+            keywords.push({name: name, max: max});
+        }
+        return keywords;
+    };
+
+
+    var edit_keywords = function(cell, celltoolbar) {
+        var keywords = [];
+        if (cell.metadata.nblearning !== undefined &&
+            cell.metadata.nblearning.keywords !== undefined) {
+            keywords = cell.metadata.nblearning.keywords;
+        }
+        var keywords_text = keywords_to_text(keywords);
+
+        var notebook = Jupyter.notebook;
+        var error_div = $('<div/>').css('color', 'red');
+        var message = 'Edit the keywords the cell.';
+
+        var textarea = $('<textarea/>')
+            .attr('rows', '13')
+            .attr('cols', '80')
+            .attr('name', 'keywords')
+            .text(keywords_text);
+
+        var dialogform = $('<div/>').attr('title', 'Edit Keywords')
+            .append(
+                $('<form/>').append(
+                    $('<fieldset/>').append(
+                        $('<label/>')
+                        .attr('for','keywords')
+                        .text(message)
+                        )
+                        .append(error_div)
+                        .append($('<br/>'))
+                        .append(textarea)
+                    )
+            );
+
+        var editor = CodeMirror.fromTextArea(textarea[0], {
+            lineNumbers: true,
+            matchBrackets: true,
+            indentUnit: 2,
+            autoIndent: true,
+            mode: 'text/plain',
+        });
+
+        var modal_obj = dialog.modal({
+            title: 'Edit Keywords',
+            body: dialogform,
+            buttons: {
+                OK: { class : "btn-primary",
+                    click: function() {
+                        var new_keywords;
+                        try {
+                            new_keywords = text_to_keywords(editor.getValue());
+                        } catch(e) {
+                            console.log(e);
+                            error_div.text('WARNING: Could not save invalid keywords.');
+                            return false;
+                        }
+                        cell.metadata.nblearning.keywords = new_keywords;
+                        celltoolbar.rebuild();
+                    }
+                },
+                Cancel: {}
+            },
+            notebook: notebook,
+            keyboard_manager: notebook.keyboard_manager,
+        });
+
+        modal_obj.on('shown.bs.modal', function(){ editor.refresh(); });
+    };
+
+
+    var create_button_edit_keywords = nbcelltesting.create_button('edit', 'Edit Keywords',
+                                                                  edit_keywords);
+
+
     var count_occurrences = function(text, str) {
         for (var count=-1, index=0;
              index != -1;
@@ -101,9 +204,13 @@ define([
         CellToolbar.register_callback('nblearning.keywords',
                                       create_keywords,
                                       ['code']);
+        CellToolbar.register_callback('nblearning.edit_keywords',
+                                      create_button_edit_keywords,
+                                      ['code']);
 
         var preset = [
             'nblearning.keywords',
+            'nblearning.edit_keywords',
             'nbcelltesting.result_test',
             'nbcelltesting.button_save',
             'nbcelltesting.dropdown_menu',
