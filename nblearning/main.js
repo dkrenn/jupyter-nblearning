@@ -114,6 +114,9 @@ define([
                             error_div.text('WARNING: Could not save invalid keywords.');
                             return false;
                         }
+                        if (cell.metadata.nblearning === undefined) {
+                            cell.metadata.nblearning = {};
+                        }
                         cell.metadata.nblearning.keywords = new_keywords;
                         celltoolbar.rebuild();
                     }
