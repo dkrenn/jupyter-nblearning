@@ -18,8 +18,9 @@ define([
 
     var CellToolbar = notebook_celltoolbar.CellToolbar;
 
+    var keywords_data = {};
 
-    var keywords_data = [];
+    var showing_solution = {};
 
 
     events.on('change.Cell', function(event, data) {
@@ -142,21 +143,21 @@ define([
     var update_keyword_counts = function(cell) {
         var text = cell.get_text();
         var new_keywords_data = [];
-        for (var keyword of keywords_data) {
+        for (var keyword of keywords_data[cell]) {
             var count = count_occurrences(text, keyword.name);
             keyword.count = count;
             new_keywords_data.push(keyword);
         }
-        keywords_data = new_keywords_data;
+        keywords_data[cell] = new_keywords_data;
     };
 
 
     var prepare_keywords = function(cell) {
-        keywords_data = [];
+        keywords_data[cell] = [];
 
         if (cell.metadata.nblearning !== undefined &&
             cell.metadata.nblearning.keywords !== undefined) {
-            keywords_data = cell.metadata.nblearning.keywords;
+            keywords_data[cell] = cell.metadata.nblearning.keywords;
         }
 
         update_keyword_counts(cell);
@@ -165,7 +166,7 @@ define([
 
     var create_keywords_div = function(cell) {
         var div = $('<div/>').addClass('keywords');
-        for (var keyword of keywords_data) {
+        for (var keyword of keywords_data[cell]) {
             var button = $('<button/>')
                 .addClass('btn btn-default btn-xs')
                 .prop('type', 'button')
