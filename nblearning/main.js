@@ -211,6 +211,67 @@ define([
 
     var create_dropdown_menu = nbcelltesting.dropdown_factory(actions);
 
+
+    var replace_class = function(element, from, to) {
+        element.removeClass(from).addClass(to);
+    };
+
+
+    var set_solution_switch = function(cell, state) {
+        showing_solution[cell] = state;
+        update_solution_switch(cell);
+    };
+
+
+    var update_solution_switch = function(cell) {
+        if (showing_solution[cell] === undefined) {
+            showing_solution[cell] = true;
+        }
+
+        if (showing_solution[cell]) {
+            replace_class(cell.celltoolbar.element.find(
+                '#nblearning-button-solution-true'),
+                          'btn-default', 'btn-primary');
+            replace_class(cell.celltoolbar.element.find(
+                '#nblearning-button-solution-false'),
+                          'btn-primary', 'btn-default');
+        } else {
+            replace_class(cell.celltoolbar.element.find(
+                '#nblearning-button-solution-true'),
+                          'btn-primary', 'btn-default');
+            replace_class(cell.celltoolbar.element.find(
+                '#nblearning-button-solution-false'),
+                          'btn-default', 'btn-primary');
+        }
+    };
+
+
+    var create_solution_switch = function(div, cell, celltoolbar) {
+
+        var button_solution_false = $('<button/>').addClass('btn btn-default btn-xs')
+            .addClass('button-solution-false')
+            .prop('type', 'button')
+            .html('Start')
+            .attr('id', 'nblearning-button-solution-false');
+        button_solution_false.name = 'solution-false';
+        button_solution_false.on('click',
+                                function() { set_solution_switch(cell, false); });
+        $(div).addClass('nbl-thing').append(button_solution_false);
+
+        var button_solution_true = $('<button/>').addClass('btn btn-default btn-xs')
+            .addClass('button-solution-true')
+            .prop('type', 'button')
+            .html('Solution')
+            .attr('id', 'nblearning-button-solution-true');
+        button_solution_true.name = 'solution-true';
+        button_solution_true.on('click',
+                                function() { set_solution_switch(cell, true); });
+        $(div).addClass('nbl-thing').append(button_solution_true);
+
+        update_solution_switch(cell);
+    };
+
+
     function load_extension(){
         nbcelltesting.load_css();
 
@@ -220,6 +281,9 @@ define([
         CellToolbar.register_callback('nblearning.edit_keywords',
                                       create_button_edit_keywords,
                                       ['code']);
+        CellToolbar.register_callback('nblearning.solution_switch',
+                                      create_solution_switch,
+                                      ['code']);
         CellToolbar.register_callback('nblearning.dropdown_menu',
                                       create_dropdown_menu,
                                       ['code']);
@@ -227,6 +291,7 @@ define([
         var preset = [
             'nblearning.keywords',
             'nblearning.edit_keywords',
+            'nblearning.solution_switch',
             'nblearning.dropdown_menu',
             'nbcelltesting.result_test',
             'nbcelltesting.button_save',
