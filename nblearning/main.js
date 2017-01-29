@@ -202,6 +202,15 @@ define([
     });
 
 
+    var actions = [{name: 'Reset Output', callback: nbcelltesting.on_reset_desired_output},
+                   {name: 'Edit Output', callback: nbcelltesting.on_edit_desired_output},
+                   {name: 'Test Output', callback: nbcelltesting.on_test_output},
+                   {name: 'break'},
+                   {name: 'Edit Metadata', callback: nbcelltesting.on_edit_nbcelltesting_metadata}];
+
+
+    var create_dropdown_menu = nbcelltesting.dropdown_factory(actions);
+
     function load_extension(){
         nbcelltesting.load_css();
 
@@ -211,10 +220,14 @@ define([
         CellToolbar.register_callback('nblearning.edit_keywords',
                                       create_button_edit_keywords,
                                       ['code']);
+        CellToolbar.register_callback('nblearning.dropdown_menu',
+                                      create_dropdown_menu,
+                                      ['code']);
 
         var preset = [
             'nblearning.keywords',
             'nblearning.edit_keywords',
+            'nblearning.dropdown_menu',
             'nbcelltesting.result_test',
             'nbcelltesting.button_save',
             'nbcelltesting.dropdown_menu',
